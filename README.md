@@ -142,7 +142,7 @@ jobs: //무슨 동작?
 
 - commit & push 진행
 
--위의 uses: actions/checkout@master //master branch로 checkout 에서 action은 어디에서 찾을 수 있을까 => Github의 Marget place  
+-위의 uses: actions/checkout@master //master branch로 checkout 에서 action은 어디에서 찾을 수 있을까 => Github의 Market place  
 ![image](https://user-images.githubusercontent.com/86847564/221394896-a751c699-d582-4d4b-bfc9-0b5c812eeed6.png)
 
 ![image](https://user-images.githubusercontent.com/86847564/221394933-c041c6a0-713f-4f06-9f85-489cf7065522.png)

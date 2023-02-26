@@ -1,70 +1,116 @@
-# Getting Started with Create React App
+# week-1-2 (wanted-pre-onboarding 제공)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 자동화 첫 단계
 
-## Available Scripts
+1. 터미널 명령어 사용
 
-In the project directory, you can run:
+## build
 
-### `npm start`
+1. build 후
+2. 서버에 업로드
+3. 서빙
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 실습
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+1. 초기화
 
-### `npm test`
+```
+npx create-react-app .
+npm run build
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- npm run build 후에
 
-### `npm run build`
+```
+npm run build
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- build 파일을 서버에 업로드, 다시 서빙
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+npm install -g serve
+serve -s build
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- 만약 S3에 업로드 한다면, 드래그앤드롭으로 업로드 하자.
+- 파일, 폴더 모두 한번에 업로드 가능  
+  <br/>
 
-### `npm run eject`
+1. AWS 로그인
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```
+//aws configure //처음인 경우
+//aws configure default profile //profile 지정
+aws configure --profile [profile name]
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- 아이디, 비밀번호, ap-northeast-2(리전), 엔터
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```
+aws s3 ls s3://[버킷 이름] --profile [profile name]
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+![image](https://user-images.githubusercontent.com/86847564/221370756-63125f7b-25c4-4279-a312-af2f59c9b16f.png)
 
-## Learn More
+<br/>
+2. 업로드
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- 내 특정 폴더와 aws sync 맞추기
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
+npm run build //빌드
 
-### Code Splitting
+cd [빌드 파일이 있는 경로] //경로 이동
+aws s3 sync build/ s3://[버킷 이름] --profile [profile name] --delete
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+aws s3 sync build/ s3://s3-deploy-cicd-9th-test --profile wanted-session --delete //기존꺼 삭제하고 빌드 파일 업로드
+```
 
-### Analyzing the Bundle Size
+- 출력 결과 없음
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+<br/>
+3. package.json에 스크립트 입력. 
+- 빌드 후 이전에 업로드한 파일/폴더 삭제, 자동으로 업로드
 
-### Making a Progressive Web App
+```
+// package.json
+"scripts": {
+    "deploy": "npm run buid && aws s3 sync build/ s3://[버킷 이름] --profile [profile name] --delete
+"
+}
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```
 
-### Advanced Configuration
+CDN: cloudfront, Content Delivery Network  
+Route 53: 도메인 연결
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+<br/>
 
-### Deployment
+## CI/CD: 자동화
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- CI: merge, test. '자주' branch 만들어서 test 하기
+- CD: deployment.
+  - Continuous Delivery: 개발 환경의 배포 자동화
+  - Continuous Deployment: Production 환경까지 배포 자동화
+- Github Actions=> 클라우드형 CI/CD 플랫폼  
+  <br/>
 
-### `npm run build` fails to minify
+## 1. Github Actions 구성요소
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+(1) Workflow: 파이프라인. YAML 형식 파일  
+(2) Event: 레파지토리에서 발생하는 push, pull request open, issue open 활동 (예) 특정 Event 발생 시 해당 CI/CD 파이프라인 구동  
+(3) Jobs: step 그룹. step을 순차적 실행  
+(3-1) step: 터미널 명령어 한 줄  
+(4) Actions: GitHub workflow에서 자주 사용되는 기능들을 모아 놓은 커스텀 애플리케이션. 라이브러리 같은 것. Market place에서 찾을 수 있다.  
+(5) Runner: 컴퓨터
+
+## 2. CI/CD로 구축할 목표
+
+(1) 마스터 브랜치에 push, pr merge 이벤트 발생시 workflow 실행
+(2) dependencies 설치
+(3) build script 실행
+(4) aws 접속, s3 bucket에 build 결과 업로드
+
+- test 코드 작성
+- npm run test
+- master branch에 push 했을 때 통과할지 여부 검사

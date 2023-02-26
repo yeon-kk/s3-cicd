@@ -142,9 +142,36 @@ jobs: //무슨 동작?
 
 - commit & push 진행
 
--위의 uses: actions/checkout@master //master branch로 checkout 에서 action은 어디에서 찾을 수 있을까 => Github의 Market place  
+- 위의 uses: actions/checkout@master //master branch로 checkout 에서 action은 어디에서 찾을 수 있을까 => Github의 Market place
+
 ![image](https://user-images.githubusercontent.com/86847564/221394896-a751c699-d582-4d4b-bfc9-0b5c812eeed6.png)
 
 ![image](https://user-images.githubusercontent.com/86847564/221394933-c041c6a0-713f-4f06-9f85-489cf7065522.png)
 
 - 커스텀 사용이 가능
+
+- 실행 결과
+  ![image](https://user-images.githubusercontent.com/86847564/221395342-01040d44-164f-4bc8-9b58-d33746ee08e8.png)
+
+2. 만약 push할때만이 아니라, 깃헙에서 버튼 눌러서 아무때나 해보고 싶다면?=> [파일명].yml파일에 "workflow_dispatch:" 추가
+
+```
+name: CI/CD //이 workflow의 이름
+
+on: //이 workflow가 언제 실행될 것인지
+  push: //push 됐을 때
+    branches:  //어떤 branch?
+    - master //master라는 branch. master에 push 됐을 때.
+             //여러 브랜치 가능.
+    workflow_dispatch:
+
+jobs: //무슨 동작?
+  cicd: //cicd라는 job
+    runs-on: ubuntu-latest //ubuntu 최신버전 빌려주세요
+    steps: //뭘 할까?
+    - uses: actions/checkout@master //master branch로 checkout
+    - run: npm install //npm install. dependency 설치
+    - run: npm run test //test 명령어 실행
+    - run: echo SUCCESS //터미널에 SUCCESS 출력
+
+```

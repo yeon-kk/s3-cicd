@@ -1,10 +1,9 @@
-import logo from "./logo.svg";
 import "./App.css";
 
 function App() {
   return (
     <div className="App">
-      <h1>Hello! AWS CLI world</h1>
+      <h1>Hello! AWS CICD!</h1>
     </div>
   );
 }

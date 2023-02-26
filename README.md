@@ -1,4 +1,4 @@
-# week-1-2 (wanted-pre-onboarding 제공)
+# week-1-2 (원티드 프리온보딩 프론트엔드)
 
 ## 자동화 첫 단계
 
@@ -106,9 +106,9 @@ Route 53: 도메인 연결
 
 ## 2. CI/CD로 구축할 목표
 
-(1) 마스터 브랜치에 push, pr merge 이벤트 발생시 workflow 실행
-(2) dependencies 설치
-(3) build script 실행
+(1) master branch에 push, pr merge 이벤트 발생시 workflow 실행  
+(2) dependencies 설치  
+(3) build script 실행  
 (4) aws 접속, s3 bucket에 build 결과 업로드
 
 ### CI 과정

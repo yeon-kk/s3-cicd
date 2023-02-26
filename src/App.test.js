@@ -5,5 +5,5 @@ test("App render test", () => {
   render(<App />);
   const heading = screen.getByRole("heading");
   expect(heading).toBeInTheDocument();
-  expect(heading.textContent).toBe("Hello! AWS CLI world");
+  expect(heading.textContent).toBe("Hello! AWS CICD!");
 });

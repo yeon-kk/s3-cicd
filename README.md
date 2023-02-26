@@ -74,11 +74,11 @@ aws s3 sync build/ s3://s3-deploy-cicd-9th-test --profile wanted-session --delet
 
 ```
 // package.json
+
 "scripts": {
     "deploy": "npm run buid && aws s3 sync build/ s3://[버킷 이름] --profile [profile name] --delete
 "
 }
-
 ```
 
 CDN: cloudfront, Content Delivery Network  
@@ -111,13 +111,17 @@ Route 53: 도메인 연결
 (3) build script 실행
 (4) aws 접속, s3 bucket에 build 결과 업로드
 
+### CI 과정
+
+> (1) 마스터 브랜치에 push, pr merge 이벤트 발생시 workflow 실행
+
 - test 코드 작성
 - npm run test
 - master branch에 push 했을 때 통과할지 여부 검사
 
 - github repository의 Actions 버튼 클릭
 
-1. github repo/.github/workflows/[파일명].yml 이 있다면 실행이 가능하다.  
+1. <span style='background-color:#dcffe4'>github repo/.github/workflows/[파일명].yml</span> 이 있다면 실행이 가능하다.  
    따라서, 내 로컬 repo 안에 .github폴더 안에 workflows 폴더를 만들고, 다음을 입력한다.
 
 ```
@@ -142,7 +146,7 @@ jobs: //무슨 동작?
 
 - commit & push 진행
 
-- 위의 uses: actions/checkout@master //master branch로 checkout 에서 action은 어디에서 찾을 수 있을까 => Github의 Market place
+- 위의 uses: actions/checkout@master //master branch로 checkout 에서 action은 어디에서 찾을 수 있을까 => <span style='background-color:#dcffe4'>Github의 Market place</span>
 
 ![image](https://user-images.githubusercontent.com/86847564/221394896-a751c699-d582-4d4b-bfc9-0b5c812eeed6.png)
 
@@ -153,7 +157,7 @@ jobs: //무슨 동작?
 - 실행 결과
   ![image](https://user-images.githubusercontent.com/86847564/221395342-01040d44-164f-4bc8-9b58-d33746ee08e8.png)
 
-2. 만약 push할때만이 아니라, 깃헙에서 버튼 눌러서 아무때나 해보고 싶다면?=> [파일명].yml파일에 "workflow_dispatch:" 추가
+2. 만약 push할때만이 아니라, 깃헙에서 버튼 눌러서 아무때나 해보고 싶다면?=> [파일명].yml파일에 <span style='background-color:#dcffe4'>workflow_dispatch:</span> 추가
 
 ```
 name: CI/CD //이 workflow의 이름
@@ -163,7 +167,7 @@ on: //이 workflow가 언제 실행될 것인지
     branches:  //어떤 branch?
     - master //master라는 branch. master에 push 됐을 때.
              //여러 브랜치 가능.
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs: //무슨 동작?
   cicd: //cicd라는 job
@@ -173,5 +177,69 @@ jobs: //무슨 동작?
     - run: npm install //npm install. dependency 설치
     - run: npm run test //test 명령어 실행
     - run: echo SUCCESS //터미널에 SUCCESS 출력
+```
+
+![image](https://user-images.githubusercontent.com/86847564/221396309-2f9a3ae0-7460-46b6-95b0-a0f747efb0be.png)
+
+- Actions의 CI/CD에 들어가면 우측에 'Run workflow'버튼
+
+![image](https://user-images.githubusercontent.com/86847564/221396345-4ed8c8b0-61e3-4351-972a-9f75d8273621.png)
+
+### CD: build, S3에 업로드
+
+(1) aws 로그인  
+(2) cli 설치  
+(3) s3 에 설치  
+=> 오 복잡해!: 누군가는 만들어 놓았음. Market place!  
+<span style='background-color:#fff5b1'>s3</span> 입력 후, <span style='background-color:#fff5b1'>Most installed/starred</span> 정렬 버튼 클릭  
+![image](https://user-images.githubusercontent.com/86847564/221396851-ced636d4-620d-4b4a-998f-cdd52a2e3ad9.png)
 
 ```
+name: CI/CD //이 workflow의 이름
+
+on: //이 workflow가 언제 실행될 것인지
+  push: //push 됐을 때
+    branches:  //어떤 branch?
+    - master //master라는 branch. master에 push 됐을 때.
+             //여러 브랜치 가능.
+  workflow_dispatch:
+
+jobs: //무슨 동작?
+  cicd: //cicd라는 job
+    runs-on: ubuntu-latest //ubuntu 최신버전 빌려주세요
+    steps: //뭘 할까?
+    - uses: actions/checkout@master //master branch로 checkout
+    - run: npm install //npm install. dependency 설치
+    - run: npm run test //test 명령어 실행
+    - run: echo TEST_SUCCESS //터미널에 TEST_SUCCESS 출력
+    - run: npm run build
+    - uses: jakejarvis/s3-sync-action@master // 이 action 사용. action 이름
+      with:
+        args: --delete //argument는 delete만. sync할 때 옵션
+      env:
+        AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }} //어떤 bucket
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} //인증. 환경변수
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} //인증. 환경변수
+        AWS_REGION: 'ap-northeast-2'
+        SOURCE_DIR: 'build' // build를 업로드
+```
+
+- github Actions>Secrets and variables> New Repository secret버튼 클릭
+
+![image](https://user-images.githubusercontent.com/86847564/221397126-4b4a2c27-59d0-466e-b2c7-2adaa6ee8b2e.png)
+
+- Actions secrets/New secret 입력(추후에는 수정만 가능. 볼 순 없다.)
+
+  - Name: AWS_S3_BUCKET <span style='background-color:#dcffe4'>AWS_S3_BUCKET</span>//yml 파일 확인
+  - Secret: bucket 이름
+
+- 다시, New Repository secret버튼 클릭
+
+- Actions secrets/New secret
+
+  - Name: <span style='background-color:#dcffe4'>AWS_ACCESS_KEY_ID</span>//yml 파일 확인
+  - Secret: AWS_ACCESS_KEY_ID에 해당하는 값
+
+- Actions secrets/New secret
+  - Name: <span style='background-color:#dcffe4'>AWS_SECRET_ACCESS_KEY</span>//yml 파일 확인
+  - Secret: AWS_SECRET_ACCESS_KEY에 해당하는 값

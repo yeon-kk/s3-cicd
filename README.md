@@ -1,16 +1,54 @@
 # week-1-2 (원티드 프리온보딩 프론트엔드)
 
-## 자동화 첫 단계
+## CI/CD 과정
+
+1. AWS S3 bucket 생성
+2. CI/CD  
+   (1) test 코드 작성  
+   (2) Github Actions에 AWS key 등록  
+   (3) [파일명].yml파일 생성
+
+   ```
+   name: CI/CD
+
+   on:
+     push:
+       branches:
+       - master
+     workflow_dispatch:
+
+   jobs:
+     cicd:
+       runs-on: ubuntu-latest
+       steps:
+       - uses: actions/checkout@master
+       - run: npm install dependency 설치
+       - run: npm run test
+       - run: echo SUCCESS
+           - run: echo TEST_SUCCESS
+           - run: npm run build
+           - uses: jakejarvis/s3-sync-action@master
+             with:
+               args: --delete
+             env:
+               AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+               AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+               AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+               AWS_REGION: 'ap-northeast-2'
+               SOURCE_DIR: 'build'
+   ```
+
+### 자동화 첫 단계
 
 1. 터미널 명령어 사용
 
-## build
+### aws build & 업로드 자동화에 필요한 과정
 
 1. build 후
 2. 서버에 업로드
 3. 서빙
 
-## 실습
+### aws build & 업로드 자동화 실습
 
 1. 초기화
 
@@ -86,7 +124,7 @@ Route 53: 도메인 연결
 
 <br/>
 
-## CI/CD: 자동화
+### CI/CD: 자동화
 
 - CI: merge, test. '자주' branch 만들어서 test 하기
 - CD: deployment.
@@ -95,7 +133,7 @@ Route 53: 도메인 연결
 - Github Actions=> 클라우드형 CI/CD 플랫폼  
   <br/>
 
-## 1. Github Actions 구성요소
+### 1. Github Actions 구성요소
 
 (1) Workflow: 파이프라인. YAML 형식 파일  
 (2) Event: 레파지토리에서 발생하는 push, pull request open, issue open 활동 (예) 특정 Event 발생 시 해당 CI/CD 파이프라인 구동  
@@ -104,7 +142,7 @@ Route 53: 도메인 연결
 (4) Actions: GitHub workflow에서 자주 사용되는 기능들을 모아 놓은 커스텀 애플리케이션. 라이브러리 같은 것. Market place에서 찾을 수 있다.  
 (5) Runner: 컴퓨터
 
-## 2. CI/CD로 구축할 목표
+### 2. CI/CD로 구축할 목표
 
 (1) master branch에 push, pr merge 이벤트 발생시 workflow 실행  
 (2) dependencies 설치  
